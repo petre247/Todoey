@@ -32,7 +32,9 @@
                             <outlet property="delegate" destination="1CQ-RG-VRc" id="ZJ3-Ym-MP0"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Todoey" id="2Js-0I-gLR"/>
+                    <navigationItem key="navigationItem" title="Todoey" id="2Js-0I-gLR">
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="Lo9-1r-h9b"/>
+                    </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="5Sj-ko-mjQ" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
