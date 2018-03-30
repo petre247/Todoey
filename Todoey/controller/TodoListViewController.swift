@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreData
 
 class TodoListViewController: UITableViewController {
 
@@ -16,38 +17,20 @@ class TodoListViewController: UITableViewController {
     //let defaults = UserDefaults.standard
     
     //Second way to persist data (objects)
-    let  dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
-    
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        let newItem = Item(name: "Find Mike")
-        itemArray.append(newItem)
-        let newItem2 = Item(name: "Buy Eggs")
-        itemArray.append(newItem2)
-        let newItem3 = Item(name: "Take over the world")
-        itemArray.append(newItem3)
+       
         
-        for num in 1...20 {
-            itemArray.append(Item(name: "Take over the world \(num)"))
-        }
-        
-        //first method of persisting data
-        //if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
-        //    itemArray = items
-        //}
-        
-        //second method of persisting data
         loadItems()
-        print(dataFilePath!)
+        print(dataFilePath)
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-        itemArray[indexPath.row].updateState()
-        
-        //persist data method 2
+        itemArray[indexPath.row].checked = !itemArray[indexPath.row].checked
         saveItems()
         tableView.deselectRow(at: indexPath, animated: true)
     }
@@ -89,24 +72,22 @@ class TodoListViewController: UITableViewController {
         //action that is called when ok is pressed
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             //what will happen once user hits add button on ui alert
-            self.itemArray.append(Item(name: textField.text!))
             
-            //first way to persist data
-           // self.defaults.set(self.itemArray, forKey: "TodoListArray")
+            let newItem = Item(context: self.context)
+            newItem.itemName = textField.text!
+            newItem.checked = false
+            self.itemArray.append(newItem)
             
-            //second way to persisrt data
+            
             self.saveItems()
         }
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
     }
     
-    //Method 2: Persisting data save/load items
     func saveItems(){
-        let encoder = PropertyListEncoder()
         do{
-            let data = try encoder.encode(itemArray)
-            try data.write(to: dataFilePath!)
+           try context.save()
         } catch{
             print("Error trying to encode data", " \(error)")
         }
@@ -114,13 +95,12 @@ class TodoListViewController: UITableViewController {
     }
 
     func loadItems(){
-        if let data = try? Data(contentsOf: dataFilePath!){
-            let decoder = PropertyListDecoder()
-            do{
-                try itemArray = decoder.decode([Item].self, from: data)
-            } catch {
-                print("Error decoding item array ","\(error)")
-            }
+      
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        do{
+            itemArray = try context.fetch(request)
+        } catch {
+            print("Error fetching data from context \(error)")
         }
     }
 }
