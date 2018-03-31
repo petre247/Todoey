@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5F006A3F206EA063004E6C92 /* CategoryTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F006A3E206EA063004E6C92 /* CategoryTableViewController.swift */; };
 		5F473B0D206AF98B0074924A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F473B0C206AF98B0074924A /* AppDelegate.swift */; };
 		5F473B0F206AF98B0074924A /* TodoListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F473B0E206AF98B0074924A /* TodoListViewController.swift */; };
 		5F473B12206AF98B0074924A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5F473B10206AF98B0074924A /* Main.storyboard */; };
@@ -16,6 +17,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		5F006A3E206EA063004E6C92 /* CategoryTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryTableViewController.swift; sourceTree = "<group>"; };
 		5F473B09206AF98B0074924A /* Todoey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Todoey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F473B0C206AF98B0074924A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5F473B0E206AF98B0074924A /* TodoListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoListViewController.swift; sourceTree = "<group>"; };
@@ -57,7 +59,7 @@
 		5F200C48206D995F0084A7AF /* controller */ = {
 			isa = PBXGroup;
 			children = (
-				5F473B0C206AF98B0074924A /* AppDelegate.swift */,
+				5F006A3E206EA063004E6C92 /* CategoryTableViewController.swift */,
 				5F473B0E206AF98B0074924A /* TodoListViewController.swift */,
 			);
 			path = controller;
@@ -90,6 +92,7 @@
 		5F473B0B206AF98B0074924A /* Todoey */ = {
 			isa = PBXGroup;
 			children = (
+				5F473B0C206AF98B0074924A /* AppDelegate.swift */,
 				5F200C4B206D9B240084A7AF /* Supporting Files */,
 				5F200C48206D995F0084A7AF /* controller */,
 				5F200C47206D99510084A7AF /* view */,
@@ -174,6 +177,7 @@
 				5F473B0F206AF98B0074924A /* TodoListViewController.swift in Sources */,
 				5FD38D03206E6CE400E4BC6D /* DataModel.xcdatamodeld in Sources */,
 				5F473B0D206AF98B0074924A /* AppDelegate.swift in Sources */,
+				5F006A3F206EA063004E6C92 /* CategoryTableViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
