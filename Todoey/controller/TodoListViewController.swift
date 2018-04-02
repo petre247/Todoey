@@ -39,8 +39,25 @@ class TodoListViewController: UITableViewController{
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-      //  itemArray[indexPath.row].checked = !itemArray[indexPath.row].checked
-       // saveItems()
+        //  itemArray[indexPath.row].checked = !itemArray[indexPath.row].checked
+        // saveItems()
+        if let item = todoItems?[indexPath.row] {
+            do{
+                try realm.write {
+                    if(item.checked){
+                        realm.delete(item)
+                    }
+                    else{
+                        item.checked = !item.checked
+                    }
+                    
+                }
+            }catch {
+                print("Error saving checked status: \(error)")
+            }
+            tableView.reloadData()
+            
+        }
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
@@ -86,7 +103,7 @@ class TodoListViewController: UITableViewController{
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             //what will happen once user hits add button on ui alert
             
-           
+            
             if let currentCategory = self.selectedCategory {
                 do{
                     try self.realm.write {
@@ -99,7 +116,7 @@ class TodoListViewController: UITableViewController{
                 }
                 
             }
-           
+            
             
             self.tableView.reloadData()
         }
@@ -107,7 +124,7 @@ class TodoListViewController: UITableViewController{
         present(alert, animated: true, completion: nil)
     }
     
-  
+    
     //MARK - loadItems function
     func loadItems(){
         todoItems = selectedCategory?.items.sorted(byKeyPath: "itemName", ascending: true)
@@ -120,23 +137,18 @@ class TodoListViewController: UITableViewController{
 //MARK - Search bar methods
 extension TodoListViewController: UISearchBarDelegate{
     
-    //    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-    //        let request : NSFetchRequest<Item> = Item.fetchRequest()
-    //
-    //        let predicate = NSPredicate(format: "itemName CONTAINS[cd] %@",searchBar.text!)
-    //        request.sortDescriptors = [NSSortDescriptor(key: "itemName", ascending: true)]
-    //
-    //       loadItems(with: request, predicate: predicate)
-    //
-    //    }
-    //    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-    //        if searchBar.text?.count == 0 {
-    //            loadItems()
-    //            DispatchQueue.main.async {//determines thread
-    //                searchBar.resignFirstResponder()
-    //            }
-    //
-    //        }
-    //    }
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        todoItems = todoItems?.filter("itemName CONTAINS[cd] %@",searchBar.text!).sorted(byKeyPath: "itemName", ascending: true)
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            loadItems()
+            DispatchQueue.main.async {//determines thread
+                searchBar.resignFirstResponder()
+            }
+            
+        }
+    }
 }
 
