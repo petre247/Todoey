@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class TodoListViewController: UITableViewController{
+class TodoListViewController: SwipeTableViewController{
     
     let realm = try! Realm()
     var todoItems: Results<Item>?
@@ -26,16 +26,10 @@ class TodoListViewController: UITableViewController{
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
         if let item = todoItems?[indexPath.row] {
             do{
                 try realm.write {
-                    if(item.checked){
-                        realm.delete(item)
-                    }
-                    else{
-                        item.checked = !item.checked
-                    }
+                    item.checked = !item.checked
                 }
             }catch {
                 print("Error saving checked status: \(error)")
@@ -55,9 +49,9 @@ class TodoListViewController: UITableViewController{
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         //reusable cell seems to mess up check boxes
         //we need to associate a property with the item, not the cell -> model
-        let cell = tableView.dequeueReusableCell(withIdentifier: "todoItemCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        //let cell = tableView.dequeueReusableCell(withIdentifier: "todoItemCell", for: indexPath)
         if let curItem = todoItems?[indexPath.row]{
-            
             cell.textLabel?.text = curItem.itemName
             //using model to determine checkbox
             cell.accessoryType = curItem.checked ? .checkmark : .none
@@ -112,6 +106,18 @@ class TodoListViewController: UITableViewController{
     func loadItems(){
         todoItems = selectedCategory?.items.sorted(byKeyPath: "itemName", ascending: true)
         tableView.reloadData()
+    }
+    
+    override func updateModel(at indexPath: IndexPath) {
+        if let item = self.todoItems?[indexPath.row] {
+            do{
+                try self.realm.write {
+                    self.realm.delete(item)
+                }
+            }catch {
+                print("Error saving checked status: \(error)")
+            }
+        }
     }
 }
 
