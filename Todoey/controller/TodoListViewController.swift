@@ -12,35 +12,21 @@ import RealmSwift
 class TodoListViewController: UITableViewController{
     
     let realm = try! Realm()
-    
     var todoItems: Results<Item>?
-    
     var selectedCategory : Category? {
         didSet{
-            loadItems()
+            loadItems()//load items when set
         }
     }
     
-    //First way to persist data
-    //let defaults = UserDefaults.standard
-    
-    //Second way to persist data (objects)
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-        
-        
         loadItems()
-        
-        
-        //print(dataFilePath)
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        //  itemArray[indexPath.row].checked = !itemArray[indexPath.row].checked
-        // saveItems()
+        
         if let item = todoItems?[indexPath.row] {
             do{
                 try realm.write {
@@ -50,13 +36,11 @@ class TodoListViewController: UITableViewController{
                     else{
                         item.checked = !item.checked
                     }
-                    
                 }
             }catch {
                 print("Error saving checked status: \(error)")
             }
             tableView.reloadData()
-            
         }
         tableView.deselectRow(at: indexPath, animated: true)
     }
@@ -75,7 +59,6 @@ class TodoListViewController: UITableViewController{
         if let curItem = todoItems?[indexPath.row]{
             
             cell.textLabel?.text = curItem.itemName
-            
             //using model to determine checkbox
             cell.accessoryType = curItem.checked ? .checkmark : .none
         }
@@ -128,8 +111,6 @@ class TodoListViewController: UITableViewController{
     //MARK - loadItems function
     func loadItems(){
         todoItems = selectedCategory?.items.sorted(byKeyPath: "itemName", ascending: true)
-        
-        
         tableView.reloadData()
     }
 }
