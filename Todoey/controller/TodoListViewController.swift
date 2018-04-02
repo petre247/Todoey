@@ -7,11 +7,14 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 class TodoListViewController: UITableViewController{
-
-    var itemArray = [Item]()
+    
+    let realm = try! Realm()
+    
+    var todoItems: Results<Item>?
+    
     var selectedCategory : Category? {
         didSet{
             loadItems()
@@ -23,12 +26,11 @@ class TodoListViewController: UITableViewController{
     
     //Second way to persist data (objects)
     let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-       
+        
         
         loadItems()
         
@@ -37,32 +39,35 @@ class TodoListViewController: UITableViewController{
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        itemArray[indexPath.row].checked = !itemArray[indexPath.row].checked
-        saveItems()
+      //  itemArray[indexPath.row].checked = !itemArray[indexPath.row].checked
+       // saveItems()
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
     /**
-        returns number of rows in table
-    */
+     returns number of rows in table
+     */
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return itemArray.count
+        return todoItems?.count ?? 1
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         //reusable cell seems to mess up check boxes
         //we need to associate a property with the item, not the cell -> model
         let cell = tableView.dequeueReusableCell(withIdentifier: "todoItemCell", for: indexPath)
-        let curItem = itemArray[indexPath.row]
-        
-        cell.textLabel?.text = curItem.itemName
-        
-        //using model to determine checkbox
-        cell.accessoryType = curItem.checked ? .checkmark : .none
-        
+        if let curItem = todoItems?[indexPath.row]{
+            
+            cell.textLabel?.text = curItem.itemName
+            
+            //using model to determine checkbox
+            cell.accessoryType = curItem.checked ? .checkmark : .none
+        }
+        else{
+            cell.textLabel?.text = "No Items added"
+        }
         return cell
     }
-
+    
     //MARK - addButtonPressed function implementation
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         //local variable to be used when updating list
@@ -81,46 +86,33 @@ class TodoListViewController: UITableViewController{
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             //what will happen once user hits add button on ui alert
             
-            let newItem = Item(context: self.context)
-            newItem.itemName = textField.text!
-            newItem.checked = false
-            newItem.parentCategory = self.selectedCategory
-            self.itemArray.append(newItem)
+           
+            if let currentCategory = self.selectedCategory {
+                do{
+                    try self.realm.write {
+                        let newItem = Item()
+                        newItem.itemName = textField.text!
+                        currentCategory.items.append(newItem)
+                    }
+                } catch{
+                    print("Error trying to encode data", " \(error)")
+                }
+                
+            }
+           
             
-            
-            self.saveItems()
+            self.tableView.reloadData()
         }
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
     }
     
-    //MARK - saveItems function
-    func saveItems(){
-        do{
-           try context.save()
-        } catch{
-            print("Error trying to encode data", " \(error)")
-        }
-        tableView.reloadData()
-    }
-
+  
     //MARK - loadItems function
-    func loadItems(with request : NSFetchRequest<Item> = Item.fetchRequest(), predicate: NSPredicate? = nil){
-        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
-        if let additionalPredicate = predicate {
-            print("make compound predicate: \(predicate)")
-            let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [additionalPredicate, categoryPredicate])
-            request.predicate = compoundPredicate //doesnt work because it overrides the other predicate from the search bar
-        }
-        else{
-            request.predicate = categoryPredicate
-            print("using simple predicate")
-        }
-        do{
-            itemArray = try context.fetch(request)
-        } catch {
-            print("Error fetching data from context \(error)")
-        }
+    func loadItems(){
+        todoItems = selectedCategory?.items.sorted(byKeyPath: "itemName", ascending: true)
+        
+        
         tableView.reloadData()
     }
 }
@@ -128,23 +120,23 @@ class TodoListViewController: UITableViewController{
 //MARK - Search bar methods
 extension TodoListViewController: UISearchBarDelegate{
     
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        let request : NSFetchRequest<Item> = Item.fetchRequest()
-       
-        let predicate = NSPredicate(format: "itemName CONTAINS[cd] %@",searchBar.text!)
-        request.sortDescriptors = [NSSortDescriptor(key: "itemName", ascending: true)]
-        
-       loadItems(with: request, predicate: predicate)
-        
-    }
-    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        if searchBar.text?.count == 0 {
-            loadItems()
-            DispatchQueue.main.async {//determines thread
-                searchBar.resignFirstResponder()
-            }
-           
-        }
-    }
+    //    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+    //        let request : NSFetchRequest<Item> = Item.fetchRequest()
+    //
+    //        let predicate = NSPredicate(format: "itemName CONTAINS[cd] %@",searchBar.text!)
+    //        request.sortDescriptors = [NSSortDescriptor(key: "itemName", ascending: true)]
+    //
+    //       loadItems(with: request, predicate: predicate)
+    //
+    //    }
+    //    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+    //        if searchBar.text?.count == 0 {
+    //            loadItems()
+    //            DispatchQueue.main.async {//determines thread
+    //                searchBar.resignFirstResponder()
+    //            }
+    //
+    //        }
+    //    }
 }
 
