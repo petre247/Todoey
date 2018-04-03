@@ -14,7 +14,7 @@ class TodoListViewController: SwipeTableViewController{
     
     let realm = try! Realm()
     var todoItems: Results<Item>?
-   var selectedCategory : Category? {
+    var selectedCategory : Category? {
         didSet{
             loadItems()//load items when set
         }
@@ -22,8 +22,25 @@ class TodoListViewController: SwipeTableViewController{
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        loadItems()
+        tableView.separatorStyle = .none
+        
+        
     }
+    override func viewWillAppear(_ animated: Bool) {
+        // Does not work with view did load
+        if let colorHex = selectedCategory?.color {
+            title = selectedCategory!.name
+            
+            if let navBarColor = UIColor(hexString: colorHex){
+                navigationController?.navigationBar.barTintColor = navBarColor
+                navigationController?.navigationBar.tintColor = ContrastColorOf(navBarColor, returnFlat: true)
+                navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedStringKey.foregroundColor : ContrastColorOf(navBarColor, returnFlat: true)]
+                searchBar.tintColor = navBarColor
+                }
+        }
+    }
+    
+    @IBOutlet weak var searchBar: UISearchBar!
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if let item = todoItems?[indexPath.row] {
