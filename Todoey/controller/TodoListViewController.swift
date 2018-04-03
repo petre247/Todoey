@@ -8,17 +8,17 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class TodoListViewController: SwipeTableViewController{
     
     let realm = try! Realm()
     var todoItems: Results<Item>?
-    var selectedCategory : Category? {
+   var selectedCategory : Category? {
         didSet{
             loadItems()//load items when set
         }
     }
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -47,13 +47,22 @@ class TodoListViewController: SwipeTableViewController{
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        //reusable cell seems to mess up check boxes
-        //we need to associate a property with the item, not the cell -> model
+        
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
-        //let cell = tableView.dequeueReusableCell(withIdentifier: "todoItemCell", for: indexPath)
         if let curItem = todoItems?[indexPath.row]{
             cell.textLabel?.text = curItem.itemName
-            //using model to determine checkbox
+            
+            //if let color = FlatSkyBlue().darken(byPercentage: CGFloat(Float(indexPath.row)/Float(todoItems!.count))){
+            if let color = UIColor(hexString: selectedCategory!.color)?.darken(byPercentage: CGFloat(Float(indexPath.row)/Float(todoItems!.count))){
+                
+                cell.backgroundColor = color
+                cell.textLabel?.textColor = ContrastColorOf(color, returnFlat: true)
+                
+            }
+            else{
+                cell.backgroundColor = FlatSkyBlue()
+            }
+            
             cell.accessoryType = curItem.checked ? .checkmark : .none
         }
         else{
@@ -86,6 +95,7 @@ class TodoListViewController: SwipeTableViewController{
                     try self.realm.write {
                         let newItem = Item()
                         newItem.itemName = textField.text!
+                        newItem.dateCreated = Date()
                         currentCategory.items.append(newItem)
                     }
                 } catch{
@@ -125,7 +135,7 @@ class TodoListViewController: SwipeTableViewController{
 extension TodoListViewController: UISearchBarDelegate{
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        todoItems = todoItems?.filter("itemName CONTAINS[cd] %@",searchBar.text!).sorted(byKeyPath: "itemName", ascending: true)
+        todoItems = todoItems?.filter("itemName CONTAINS[cd] %@",searchBar.text!).sorted(byKeyPath: "dateCreated", ascending: true)
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
